@@ -23,7 +23,7 @@ type GormLinkRepository struct {
 // Cette fonction retourne *GormLinkRepository, qui implémente l'interface LinkRepository.
 func NewLinkRepository(db *gorm.DB) *GormLinkRepository {
 	// TODO
-	return &GormLinkRepository{DB: db} // Initialisation de GormLinkRepository avec la connexion DB
+	return &GormLinkRepository{db: db} // Initialisation de GormLinkRepository avec la connexion DB
 }
 
 // CreateLink insère un nouveau lien dans la base de données.

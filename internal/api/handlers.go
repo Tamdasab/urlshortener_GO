@@ -27,15 +27,18 @@ func SetupRoutes(router *gin.Engine, linkService *services.LinkService) {
 		ClickEventsChannel =
 	}
 
-	// TODO : Route de Health Check , /health
-	router.GET()
+	// Route de Health Check , /health
+	router.GET("/health", HealthCheckHandler)
 
-	// TODO : Routes de l'API
-	// Doivent être au format /api/v1/
-	// POST /links
-	// GET /links/:shortCode/stats
-
-
+	// Routes de l'API au format /api/v1/
+	api := router.Group("/api/v1")
+	{
+		// POST /links
+		api.POST("/links", CreateShortLinkHandler(linkService))
+		
+		// GET /links/:shortCode/stats
+		// api.GET("/links/:shortCode/stats", GetLinkStatsHandler(linkService))
+	}
 
 	// Route de Redirection (au niveau racine pour les short codes)
 	router.GET("/:shortCode", RedirectHandler(linkService))
@@ -55,23 +58,35 @@ type CreateLinkRequest struct {
 func CreateShortLinkHandler(linkService *services.LinkService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req CreateLinkRequest
-		// TODO : Tente de lier le JSON de la requête à la structure CreateLinkRequest.
+		
+		// Tente de lier le JSON de la requête à la structure CreateLinkRequest.
 		// Gin gère la validation 'binding'.
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
 
-
-		// TODO: Appeler le LinkService (CreateLink pour créer le nouveau lien.
-
+		// Appeler le LinkService (CreateLink) pour créer le nouveau lien.
+		link, err := linkService.CreateLink(req.LongURL)
+		if err != nil {
+			log.Printf("Error creating link for URL %s: %v", req.LongURL, err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Internal server error",
+			})
+			return
+		}
 
 		// Retourne le code court et l'URL longue dans la réponse JSON.
-		// TODO Choisir le bon code HTTP
-		c.JSON(XXX, gin.H{
+		// Code HTTP 201 Created (nouvelle ressource)
+		c.JSON(http.StatusCreated, gin.H{
 			"short_code":     link.ShortCode,
 			"long_url":       link.LongURL,
-			"full_short_url": "http://localhost:8080/" + link.ShortCode, // TODO: Utiliser cfg.Server.BaseURL ici
+			"full_short_url": cmd2.Cfg.Server.BaseURL + "/" + link.ShortCode, // Utiliser cfg.Server.BaseURL
 		})
 	}
 }
-
 // RedirectHandler gère la redirection d'une URL courte vers l'URL longue et l'enregistrement asynchrone des clics.
 func RedirectHandler(linkService *services.LinkService) gin.HandlerFunc {
 	return func(c *gin.Context) {
