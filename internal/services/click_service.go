@@ -31,5 +31,9 @@ func (s *ClickService) RecordClick(click *models.Click) error {
 // Cette méthode pourrait être utilisée par le LinkService pour les statistiques, ou directement par l'API stats.
 func (s *ClickService) GetClicksCountByLinkID(linkID uint) (int, error) {
 	// TODO 2: Appeler le ClickRepository (CountclicksByLinkID) pour compter les clics par LinkID.
-
+	click_count, err := repository.CountClicksByLinkID(linkID)
+    if err != nil {
+        return 0, err
+    }
+    return click_count, nil
 }

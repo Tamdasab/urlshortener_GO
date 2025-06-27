@@ -109,14 +109,29 @@ func RedirectHandler(linkService *services.LinkService) gin.HandlerFunc {
 }
 
 // GetLinkStatsHandler gère la récupération des statistiques pour un lien spécifique.
-func GetLinkStatsHandler(linkService *services.LinkService) gin.HandlerFunc {
+func GetLinkStatsHandler(linkService *services.LinkService, , clickService *services.ClickService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		 // TODO Récupère le shortCode de l'URL avec c.Param
-
+		shortCode := c.Param("shortcode")
 		// TODO 6: Appeler le LinkService pour obtenir le lien et le nombre total de clics.
-			// Gérer le cas où le lien n'est pas trouvé.
-		// toujours avec l'erreur Gorm ErrRecordNotFound
-			// Gérer d'autres erreurs
+
+		link, err := linkService.GetLinkByShortCode(shortCode)
+        if err != nil {
+            if errors.Is(err, gorm.ErrRecordNotFound) {
+                c.JSON(http.StatusNotFound, gin.H{"error":  err.Error()})
+                return
+            }
+            // Gérer d'autres erreurs
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+            return
+        }
+
+		// Récupération du total click de notre link
+		totalClicks, err = clickService.GetClicksCountByLinkID(shortCode)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve click count"})
+            return
+        }
+
 		}
 
 		// Retourne les statistiques dans la réponse JSON.
