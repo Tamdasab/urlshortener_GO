@@ -66,27 +66,60 @@ func LoadConfig() (*Config, error) {
 	// Lire le fichier de configuration.
 	err := viper.ReadInConfig()
 	if err != nil {
-		// Si le fichier n'existe pas, on continue avec les valeurs par défaut
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Printf("Fichier de configuration non trouvé, utilisation des valeurs par défaut")
-		} else {
-			// Autres erreurs (fichier corrompu, etc.) sont fatales
-			return nil, fmt.Errorf("erreur lors de la lecture du fichier de configuration: %w", err)
+		// Gestion différenciée des erreurs
+		switch err.(type) {
+		case viper.ConfigFileNotFoundError:
+			// Fichier absent : Warning + utilisation des défauts (pas d'arrêt)
+			log.Printf("  Fichier de configuration non trouvé dans 'configs/config.yaml', utilisation des valeurs par défaut")
+		default:
+			// Fichier corrompu/malformé : Erreur fatale
+			return nil, fmt.Errorf(" ERREUR FATALE: Fichier de configuration corrompu ou malformé: %w", err)
 		}
 	} else {
-		log.Printf("Fichier de configuration chargé: %s", viper.ConfigFileUsed())
+		log.Printf(" Fichier de configuration chargé avec succès: %s", viper.ConfigFileUsed())
 	}
 
 	// Démapper (unmarshal) la configuration lue (ou les valeurs par défaut) dans la structure Config.
 	var cfg Config
 	err = viper.Unmarshal(&cfg)
 	if err != nil {
-		return nil, fmt.Errorf("erreur lors du démapping de la configuration: %w", err)
+		// Problème de démapping : Erreur fatale
+		return nil, fmt.Errorf(" ERREUR FATALE: Impossible de mapper la configuration vers la structure Go. Vérifiez la structure du fichier YAML: %w", err)
 	}
 
-	// Log  pour vérifier la config chargée
-	log.Printf("Configuration loaded: Server Port=%d, DB Name=%s, Analytics Buffer=%d, Monitor Interval=%dmin",
-		cfg.Server.Port, cfg.Database.Name, cfg.Analytics.BufferSize, cfg.Monitor.IntervalMinutes)
+	// Validation basique des valeurs critiques
+	if cfg.Server.Port <= 0 || cfg.Server.Port > 65535 {
+		return nil, fmt.Errorf(" ERREUR FATALE: Port serveur invalide (%d). Doit être entre 1 et 65535", cfg.Server.Port)
+	}
+
+	if cfg.Analytics.BufferSize <= 0 {
+		log.Printf("  Taille de buffer analytics invalide (%d), utilisation de la valeur par défaut (1000)", cfg.Analytics.BufferSize)
+		cfg.Analytics.BufferSize = 1000
+	}
+
+	if cfg.Analytics.WorkerCount <= 0 {
+		log.Printf("  Nombre de workers invalide (%d), utilisation de la valeur par défaut (5)", cfg.Analytics.WorkerCount)
+		cfg.Analytics.WorkerCount = 5
+	}
+
+	if cfg.Monitor.IntervalMinutes <= 0 {
+		log.Printf("  Intervalle de monitoring invalide (%d), utilisation de la valeur par défaut (5 minutes)", cfg.Monitor.IntervalMinutes)
+		cfg.Monitor.IntervalMinutes = 5
+	}
+
+	// Log final informatif pour confirmer la configuration chargée
+	log.Printf(" === CONFIGURATION CHARGÉE AVEC SUCCÈS ===")
+	log.Printf(" SERVEUR:")
+	log.Printf("   ├─ Port d'écoute: %d", cfg.Server.Port)
+	log.Printf("   └─ URL de base: %s", cfg.Server.BaseURL)
+	log.Printf("  BASE DE DONNÉES:")
+	log.Printf("   └─ Fichier SQLite: %s", cfg.Database.Name)
+	log.Printf(" ANALYTICS (Workers asynchrones):")
+	log.Printf("   ├─ Taille du buffer: %d événements", cfg.Analytics.BufferSize)
+	log.Printf("   └─ Nombre de workers: %d goroutines", cfg.Analytics.WorkerCount)
+	log.Printf(" MONITEUR D'URLS:")
+	log.Printf("   └─ Intervalle de vérification: %d minutes", cfg.Monitor.IntervalMinutes)
+	log.Printf(" Configuration prête pour le démarrage du service !")
 
 	return &cfg, nil // Retourne la configuration chargée
 }
