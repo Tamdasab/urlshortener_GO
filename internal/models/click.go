@@ -18,7 +18,7 @@ type Click struct {
 // Ce n'est pas un modèle GORM direct.
 // Un Click event a un LinkID(uint), un Timestamp (Time.Time), un UserAgent (string) et un IP (stringà
 type ClickEvent struct {
-	LinkId    uint
+	LinkID    uint
 	TimesTamp time.Time
 	UserAgent string
 	IPAdress  string
