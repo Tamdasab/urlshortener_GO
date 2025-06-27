@@ -40,7 +40,8 @@ func (r *GormLinkRepository) GetLinkByShortCode(shortCode string) (*models.Link,
 	var link models.Link
 	// TODO 2: Utiliser GORM pour trouver un lien par son ShortCode.
 	// La méthode First de GORM recherche le premier enregistrement correspondant et le mappe à 'link'.
-
+	err := r.db.Where("short_code = ?", shortCode).First(&link).Error
+	return &link, err
 }
 
 // GetAllLinks récupère tous les liens de la base de données.
