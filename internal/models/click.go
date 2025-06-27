@@ -21,5 +21,5 @@ type ClickEvent struct {
 	LinkID    uint
 	TimesTamp time.Time
 	UserAgent string
-	IPAdress  string
+	IPAddress string
 }
