@@ -18,12 +18,14 @@ type LinkRepository interface {
 
 // TODO :  GormLinkRepository est l'implémentation de LinkRepository utilisant GORM.
 type GormLinkRepository struct {
+	db *gorm.DB
 }
 
 // NewLinkRepository crée et retourne une nouvelle instance de GormLinkRepository.
 // Cette fonction retourne *GormLinkRepository, qui implémente l'interface LinkRepository.
 func NewLinkRepository(db *gorm.DB) *GormLinkRepository {
 	// TODO
+	return &GormLinkRepository{db: db}
 }
 
 // CreateLink insère un nouveau lien dans la base de données.
@@ -46,7 +48,11 @@ func (r *GormLinkRepository) GetLinkByShortCode(shortCode string) (*models.Link,
 func (r *GormLinkRepository) GetAllLinks() ([]models.Link, error) {
 	var links []models.Link
 	// TODO 3: Utiliser GORM pour récupérer tous les liens.
-
+	result := r.db.Find(&links)
+	if result.Error != nil {
+		return nil, result.Error // Retourne l'erreur SQL
+	}
+	return links, nil
 }
 
 // CountClicksByLinkID compte le nombre total de clics pour un ID de lien donné.
