@@ -37,7 +37,7 @@ func SetupRoutes(router *gin.Engine, linkService *services.LinkService) {
 		api.POST("/links", CreateShortLinkHandler(linkService))
 		
 		// GET /links/:shortCode/stats
-		// api.GET("/links/:shortCode/stats", GetLinkStatsHandler(linkService))
+		api.GET("/links/:shortCode/stats", GetLinkStatsHandler(linkService))
 	}
 
 
