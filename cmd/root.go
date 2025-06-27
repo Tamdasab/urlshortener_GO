@@ -42,7 +42,7 @@ func init() {
 	// pour les commandes 'server', 'create', 'stats', 'migrate'.
 	// Ces commandes s'enregistreront elles-mêmes via leur propre fonction init().
 	//
-	rootCmd.AddCommand(cli.StatsCmd)
+	//rootCmd.AddCommand(cli.StatsCmd)
 	// Assurez-vous que tous les fichiers de commande comme
 	// 'cmd/server/server.go' et 'cmd/cli/*.go' aient bien
 	// un `import "url-shortener/cmd"`
