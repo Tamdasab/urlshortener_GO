@@ -28,7 +28,7 @@ func SetupRoutes(router *gin.Engine, linkService *services.LinkService) {
 	}
 
 	// TODO : Route de Health Check , /health
-	router.GET()
+	router.GET("/health", HealthCheckHandler)
 
 	// TODO : Routes de l'API
 	// Doivent être au format /api/v1/
@@ -44,6 +44,7 @@ func SetupRoutes(router *gin.Engine, linkService *services.LinkService) {
 // HealthCheckHandler gère la route /health pour vérifier l'état du service.
 func HealthCheckHandler(c *gin.Context) {
 	// TODO  Retourner simplement du JSON avec un StatusOK, {"status": "ok"}
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 // CreateLinkRequest représente le corps de la requête JSON pour la création d'un lien.
