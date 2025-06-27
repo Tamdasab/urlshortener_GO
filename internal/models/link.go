@@ -1,8 +1,6 @@
 package models
 
-import (
-    "gorm.io/gorm"
-)
+import "gorm.io/gorm"
 
 // TODO : Créer la struct Link
 // Link représente un lien raccourci dans la base de données.
@@ -15,5 +13,5 @@ import (
 type Link struct {
 	gorm.Model
 	ShortCode string `json:"short_code" gorm:"unique;not null"`
-    LongURL   string `json:"long_url" gorm:"not null"`
+	LongURL   string `json:"long_url" gorm:"not null"`
 }
