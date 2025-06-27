@@ -38,6 +38,8 @@ func SetupRoutes(router *gin.Engine, linkService *services.LinkService) {
 		
 		// GET /links/:shortCode/stats
 		api.GET("/links/:shortCode/stats", GetLinkStatsHandler(linkService))
+
+		api.GET("/links/:shortCode", (linkService))
 	}
 
 
@@ -54,7 +56,6 @@ func SetupRoutes(router *gin.Engine, linkService *services.LinkService) {
 
 // HealthCheckHandler gère la route /health pour vérifier l'état du service.
 func HealthCheckHandler(c *gin.Context) {
-	// TODO  Retourner simplement du JSON avec un StatusOK, {"status": "ok"}
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
@@ -92,7 +93,7 @@ func CreateShortLinkHandler(linkService *services.LinkService) gin.HandlerFunc {
 		c.JSON(http.StatusCreated, gin.H{
 			"short_code":     link.ShortCode,
 			"long_url":       link.LongURL,
-			"full_short_url": cmd2.Cfg.Server.BaseURL + "/" + link.ShortCode, // Utiliser cfg.Server.BaseURL
+			"full_short_url": cmd.Cfg.Server.BaseURL + "/" + link.ShortCode, // Utiliser cfg.Server.BaseURL
 		})
 	}
 }
