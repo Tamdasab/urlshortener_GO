@@ -16,14 +16,18 @@ type LinkRepository interface {
 
 // TODO :  GormLinkRepository est l'implémentation de LinkRepository utilisant GORM.
 type GormLinkRepository struct {
+
 	db *gorm.DB // GORM DB instance pour interagir avec la base de données
+
 }
 
 // NewLinkRepository crée et retourne une nouvelle instance de GormLinkRepository.
 // Cette fonction retourne *GormLinkRepository, qui implémente l'interface LinkRepository.
 func NewLinkRepository(db *gorm.DB) *GormLinkRepository {
 	// TODO
+
 	return &GormLinkRepository{db: db} // Initialisation de GormLinkRepository avec la connexion DB
+
 }
 
 // CreateLink insère un nouveau lien dans la base de données.
@@ -38,7 +42,8 @@ func (r *GormLinkRepository) GetLinkByShortCode(shortCode string) (*models.Link,
 	var link models.Link
 	// TODO 2: Utiliser GORM pour trouver un lien par son ShortCode.
 	// La méthode First de GORM recherche le premier enregistrement correspondant et le mappe à 'link'.
-
+	err := r.db.Where("short_code = ?", shortCode).First(&link).Error
+	return &link, err
 }
 
 // GetAllLinks récupère tous les liens de la base de données.
@@ -46,7 +51,11 @@ func (r *GormLinkRepository) GetLinkByShortCode(shortCode string) (*models.Link,
 func (r *GormLinkRepository) GetAllLinks() ([]models.Link, error) {
 	var links []models.Link
 	// TODO 3: Utiliser GORM pour récupérer tous les liens.
-
+	result := r.db.Find(&links)
+	if result.Error != nil {
+		return nil, result.Error // Retourne l'erreur SQL
+	}
+	return links, nil
 }
 
 // CountClicksByLinkID compte le nombre total de clics pour un ID de lien donné.

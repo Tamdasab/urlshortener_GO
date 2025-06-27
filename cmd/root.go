@@ -33,8 +33,22 @@ func Execute() {
 
 // init initialise la configuration globale
 func init() {
+
 	// Configurer l'initialisation de la configuration
 	cobra.OnInitialize(initConfig)
+	// TODO Initialiser la configuration globale avec OnInitialize
+
+	// IMPORTANT : Ici, nous n'appelons PAS RootCmd.AddCommand() directement
+	// pour les commandes 'server', 'create', 'stats', 'migrate'.
+	// Ces commandes s'enregistreront elles-mêmes via leur propre fonction init().
+	//
+	rootCmd.AddCommand(cli.StatsCmd)
+	// Assurez-vous que tous les fichiers de commande comme
+	// 'cmd/server/server.go' et 'cmd/cli/*.go' aient bien
+	// un `import "url-shortener/cmd"`
+	// et un `func init() { cmd.RootCmd.AddCommand(MaCommandeCmd) }`
+	// C'est ce qui va faire le lien !
+
 }
 
 // initConfig charge la configuration de l'application
