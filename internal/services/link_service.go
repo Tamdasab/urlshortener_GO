@@ -72,8 +72,8 @@ func (s *LinkService) CreateLink(longURL string) (*models.Link, error) {
 		if err != nil {
 			// Si l'erreur est 'record not found' de GORM, cela signifie que le code est unique.
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				shortCode = code // Le code est unique, on peut l'utiliser
-				break            // Sort de la boucle de retry
+				shortCode = code
+				break
 			}
 			// Si c'est une autre erreur de base de données, retourne l'erreur.
 			return nil, fmt.Errorf("database error checking short code uniqueness: %w", err)
@@ -130,5 +130,5 @@ func (s *LinkService) GetLinkStats(shortCode string) (*models.Link, int, error) 
 	// TODO 4: Compter le nombre de clics pour ce LinkID
 
 	// TODO : on retourne les 3 valeurs
-	return
+	return nil, 0, nil
 }

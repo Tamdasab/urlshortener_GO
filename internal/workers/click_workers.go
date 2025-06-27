@@ -12,8 +12,6 @@ import (
 func StartClickWorkers(workerCount int, clickEventsChan <-chan models.ClickEvent, clickRepo repository.ClickRepository) {
 	log.Printf("Starting %d click worker(s)...", workerCount)
 	for i := 0; i < workerCount; i++ {
-		// Lance chaque worker dans sa propre goroutine.
-		// Le channel est passé en lecture seule (<-chan) pour renforcer l'immutabilité du channel à l'intérieur du worker.
 		go clickWorker(clickEventsChan, clickRepo)
 	}
 }

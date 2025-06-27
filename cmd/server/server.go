@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/axellelanca/urlshortener/internal/config"
+	"github.com/axellelanca/urlshortener/internal/monitor"
 	"log"
 	"net/http"
 	"os"
@@ -62,10 +63,9 @@ var RunServerCmd = &cobra.Command{
 		// TODO : Initialiser les services métiers.
 		// Créez des instances de LinkService et ClickService, en leur passant les repositories nécessaires.
 		linkService := services.NewLinkService(linkRepo)
-
+		clickService := services.NewClickService(linkRepo)
 		// Laissez le log
 		log.Println("Services métiers initialisés.")
-
 
 		// Initialiser la connexion à la base de données SQLite
 		db, err := gorm.Open(sqlite.Open(cfg.Database.Name), &gorm.Config{})
@@ -89,7 +89,6 @@ var RunServerCmd = &cobra.Command{
 
 		// Configurer le routeur Gin et les routes
 
-
 		// TODO : Initialiser et lancer le moniteur d'URLs.
 		// Utilisez l'intervalle configuré (cfg.Monitor.IntervalMinutes).
 		// Lancez le moniteur dans sa propre goroutine.
@@ -105,14 +104,12 @@ var RunServerCmd = &cobra.Command{
 		// Pas toucher au log
 		log.Println("Routes API configurées.")
 
-
 		// Créer le serveur HTTP
 		serverAddr := fmt.Sprintf(":%d", cfg.Server.Port)
 		srv := &http.Server{
 			Addr:    serverAddr,
 			Handler: router,
 		}
-
 
 		// Démarrer le serveur dans une goroutine
 		go func() {
@@ -132,7 +129,6 @@ var RunServerCmd = &cobra.Command{
 		// Bloquer jusqu'à réception d'un signal d'arrêt
 		<-quit
 		log.Println(" Signal d'arrêt reçu. Arrêt du serveur...")
-
 
 		// Arrêt propre du serveur HTTP avec un timeout.
 

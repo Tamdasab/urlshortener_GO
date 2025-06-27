@@ -38,5 +38,5 @@ func (r *GormClickRepository) CountClicksByLinkID(linkID uint) (int, error) {
 	// où 'LinkID' correspond à l'ID de lien fourni.
 	err := r.db.Model(&models.Click{}).Where("link_id = ?", linkID).Count(&count).Error
 
-	return int(count), err
+	return int(count), err // Convert the int64 count to an int
 }

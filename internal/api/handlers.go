@@ -39,19 +39,8 @@ func SetupRoutes(router *gin.Engine, linkService *services.LinkService) {
 		// GET /links/:shortCode/stats
 		api.GET("/links/:shortCode/stats", GetLinkStatsHandler(linkService))
 
-		api.GET("/links/:shortCode", (linkService))
+		api.GET("/links/:shortCode", RedirectHandler(linkService))
 	}
-
-
-	// TODO : Routes de l'API
-	// Doivent être au format /api/v1/
-	// POST /links
-	// GET /links/:shortCode/stats
-	router.GET("/api/v1/links/:shortCode", HealthCheckHandler)
-
-
-	// Route de Redirection (au niveau racine pour les short codes)
-	router.GET("/:shortCode", RedirectHandler(linkService))
 }
 
 // HealthCheckHandler gère la route /health pour vérifier l'état du service.
@@ -134,7 +123,7 @@ func RedirectHandler(linkService *services.LinkService) gin.HandlerFunc {
 }
 
 // GetLinkStatsHandler gère la récupération des statistiques pour un lien spécifique.
-func GetLinkStatsHandler(linkService *services.LinkService, , clickService *services.ClickService) gin.HandlerFunc {
+func GetLinkStatsHandler(linkService *services.LinkService, clickService *services.ClickService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		shortCode := c.Param("shortcode")
 		// TODO 6: Appeler le LinkService pour obtenir le lien et le nombre total de clics.
