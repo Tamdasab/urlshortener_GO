@@ -27,7 +27,7 @@ func clickWorker(clickEventsChan <-chan models.ClickEvent, clickRepo repository.
 			LinkID:    event.LinkID,
 			Timestamp: event.TimesTamp,
 			UserAgent: event.UserAgent,
-			IPAddress: event.IPAdress,
+			IPAddress: event.IPAddress,
 		}
 
 		// TODO 2: Persister le clic en base de données via le 'clickRepo' (CreateClick).
@@ -40,7 +40,7 @@ func clickWorker(clickEventsChan <-chan models.ClickEvent, clickRepo repository.
 			// L'événement est "perdu" pour ce TP, mais dans un vrai système,
 			// vous pourriez le remettre dans une file de retry ou une file d'erreurs.
 			log.Printf("ERROR: Failed to save click for LinkID %d (UserAgent: %s, IP: %s): %v",
-				event.LinkID, event.UserAgent, event.IPAdress, err)
+				event.LinkID, event.UserAgent, event.IPAddress, err)
 
 		} else {
 			// Log optionnel pour confirmer l'enregistrement (utile pour le débogage)

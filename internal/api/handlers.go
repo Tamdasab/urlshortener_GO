@@ -118,7 +118,7 @@ func RedirectHandler(linkService *services.LinkService) gin.HandlerFunc {
 			LinkID:    link.ID,
 			TimesTamp: time.Now(),
 			UserAgent: c.GetHeader("User-Agent"),
-			IPAdress:  c.ClientIP(),
+			IPAddress:  c.ClientIP(),
 		}
 
 		select {
