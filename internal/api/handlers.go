@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"github.com/axellelanca/urlshortener/cmd"
 	"log"
 	"net/http"
 	"time"
@@ -16,15 +17,14 @@ import (
 // TODO Créer une variable ClickEventsChannel qui est un chan de type ClickEvent
 // ClickEventsChannel est le channel global (ou injecté) utilisé pour envoyer les événements de clic
 // aux workers asynchrones. Il est bufferisé pour ne pas bloquer les requêtes de redirection.
+var ClickEventsChannel chan models.ClickEvent
 
 
 // SetupRoutes configure toutes les routes de l'API Gin et injecte les dépendances nécessaires
 func SetupRoutes(router *gin.Engine, linkService *services.LinkService) {
 	// Le channel est initialisé ici.
 	if ClickEventsChannel == nil {
-		// TODO Créer le channel ici (make), il doit être bufférisé
-		// La taille du buffer doit être configurable via Viper (cfg.Analytics.BufferSize)
-		ClickEventsChannel =
+		ClickEventsChannel = make(chan models.ClickEvent, cmd.Cfg.Analytics.BufferSize)
 	}
 
 	// TODO : Route de Health Check , /health
@@ -34,6 +34,7 @@ func SetupRoutes(router *gin.Engine, linkService *services.LinkService) {
 	// Doivent être au format /api/v1/
 	// POST /links
 	// GET /links/:shortCode/stats
+	router.GET("/api/v1/links/:shortCode", HealthCheckHandler)
 
 
 
@@ -77,34 +78,34 @@ func CreateShortLinkHandler(linkService *services.LinkService) gin.HandlerFunc {
 func RedirectHandler(linkService *services.LinkService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Récupère le shortCode de l'URL avec c.Param
-		shortCode :=
+		shortCode :=c.Param("shortCode")
 
-		// TODO 2: Récupérer l'URL longue associée au shortCode depuis le linkService (GetLinkByShortCode)
-
+		link, err := linkService.GetLinkByShortCode(shortCode)
 		if err != nil {
 			// Si le lien n'est pas trouvé, retourner HTTP 404 Not Found.
-			// Utiliser errors.Is et l'erreur Gorm
-			if  { // Utilisez errors.Is(err, gorm.ErrRecordNotFound) en production si l'erreur est wrappée
-
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				c.JSON(http.StatusNotFound, gin.H{"error": "Short link not found"})
 				return
 			}
-			// Gérer d'autres erreurs potentielles de la base de données ou du service
 			log.Printf("Error retrieving link for %s: %v", shortCode, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 			return
 		}
 
-		// TODO 3: Créer un ClickEvent avec les informations pertinentes.
-		clickEvent :=
+		clickEvent := models.ClickEvent{
+			LinkID:    link.ID,
+			TimesTamp: time.Now(),
+			UserAgent: c.GetHeader("User-Agent"),
+			IPAdress:  c.ClientIP(),
+		}
 
-		// TODO 4: Envoyer le ClickEvent dans le ClickEventsChannel avec le Multiplexage.
-		// Utilise un `select` avec un `default` pour éviter de bloquer si le channel est plein.
-		// Pour le default, juste un message à afficher :
-		// log.Printf("Warning: ClickEventsChannel is full, dropping click event for %s.", shortCode)
+		select {
+		case ClickEventsChannel <- clickEvent:
+		default:
+			log.Printf("Warning: ClickEventsChannel is full, dropping click event for %s.", shortCode)
+		}
 
-
-
-		// TODO 5: Effectuer la redirection HTTP 302 (StatusFound) vers l'URL longue.
+		c.Redirect(http.StatusFound, link.LongURL)
 
 	}
 }
