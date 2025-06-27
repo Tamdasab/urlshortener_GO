@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"fmt"
-
 	"github.com/axellelanca/urlshortener/internal/models"
 	"gorm.io/gorm"
 )
@@ -18,18 +16,20 @@ type LinkRepository interface {
 
 // TODO :  GormLinkRepository est l'implémentation de LinkRepository utilisant GORM.
 type GormLinkRepository struct {
+	db *gorm.DB // GORM DB instance pour interagir avec la base de données
 }
 
 // NewLinkRepository crée et retourne une nouvelle instance de GormLinkRepository.
 // Cette fonction retourne *GormLinkRepository, qui implémente l'interface LinkRepository.
 func NewLinkRepository(db *gorm.DB) *GormLinkRepository {
 	// TODO
+	return &GormLinkRepository{DB: db} // Initialisation de GormLinkRepository avec la connexion DB
 }
 
 // CreateLink insère un nouveau lien dans la base de données.
 func (r *GormLinkRepository) CreateLink(link *models.Link) error {
 	// TODO 1: Utiliser GORM pour créer un nouvel enregistrement (link) dans la table des liens.
-
+	return r.db.Create(link).Error
 }
 
 // GetLinkByShortCode récupère un lien de la base de données en utilisant son shortCode.
